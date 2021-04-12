@@ -25,6 +25,10 @@ The interface specification is available as
 `OpenAPI (Swagger)
 <https://nethsmdemo.nitrokey.com/api_docs/gen_nethsm_api_oas20.json>`__.
 
+You can either access the API directly, or you can use the `nitropy
+<https://github.com/nitrokey/pynitrokey>`__ CLI application.  This tutorial
+demonstrates both approaches.
+
 First, let’s see what we have here:
 
 ::
