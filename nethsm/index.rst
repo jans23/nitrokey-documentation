@@ -44,6 +44,13 @@ First, let’s see what we have here:
 
    {"vendor":"Nitrokey GmbH","product":"NetHSM"}
 
+::
+
+    $ nitropy nethsm --host localhost:8443 info
+    Host:    localhost:8443
+    Vendor:  Nitrokey GmbH
+    Product: NetHSM
+
 See what the device’s status is:
 
 ::
@@ -58,6 +65,11 @@ See what the device’s status is:
    vary: Accept, Accept-Encoding, Accept-Charset, Accept-Language
 
    {"state":"Unprovisioned"}
+
+::
+
+    $ nitropy nethsm --host localhost:8443 state
+    NetHSM localhost:8443 is Unprovisioned
 
 Initialization
 ~~~~~~~~~~~~~~
@@ -77,6 +89,12 @@ Passphrase* is used to encrypt NetHSM’s confidential data store.
    date: Wed, 11 Nov 2020 16:35:44 GMT
    vary: Accept, Accept-Encoding, Accept-Charset, Accept-Language
 
+::
+
+   $ nitropy nethsm --host localhost:8443 provision \
+       --admin-passphrase adminPassphrase --unlock-passphrase unlockPassphrase
+   NetHSM localhost:8443 provisioned
+
 NetHSM can be used in *Attended Boot* mode and *Unattended Boot* mode.
 
 -  In *Attended Boot* mode the *Unlock Passphrase* needs to be entered
@@ -93,17 +111,37 @@ Retrieve the current mode:
 
    $ curl -k -i -w '\n' https://localhost:8443/api/v1/config/unattended-boot"
 
+::
+
+   $ nitropy nethsm --host localhost:8443 --username admin --password adminPassphrase \
+       get-config --unattended-boot
+    Configuration for NetHSM localhost:8443:
+      InsecureRequestWarning,
+        Unattended boot: off
+
 Switch to *Unattended Boot* mode:
 
 ::
 
    $ curl -k -i -w '\n' -X PUT https://localhost:8443/api/v1/config/unattended-boot" -d "{ status: \"on\"}"
 
+::
+
+   $ nitropy nethsm --host localhost:8443 --username admin --password adminPassphrase \
+       set-unattended-boot on
+   Updated the unattended boot configuration for NetHSM localhost:8443
+
 Switch to *Attended Boot* mode:
 
 ::
 
    $ curl -k -i -w '\n' -X PUT https://localhost:8443/api/v1/config/unattended-boot" -d "{ status: \"off\"}"
+
+::
+
+   $ nitropy nethsm --host localhost:8443 --username admin --password adminPassphrase \
+       set-unattended-boot on
+   Updated the unattended boot configuration for NetHSM localhost:8443
 
 Roles
 ~~~~~
@@ -135,10 +173,17 @@ Create a User
 
 ::
 
-   $ curl -i -w '\n' -u admin:adminadmin \
+   $ curl -i -w '\n' -u admin:adminPassphrase \
     "https://nethsmdemo.nitrokey.com/api/v1/users/operator" -X PUT \
     -H "content-type: application/json" -d "{\"realName\": \"Jane User\", \
     \"role\": \"Operator\", \"passphrase\": \"opPassphrase\"}"
+
+::
+
+   $ nitropy nethsm --host nethsmdemo.nitrokey.com --username admin --password adminPassphrase \
+       add-user --user-id operator --real-name "Jane User" --role operator \
+       --passphrase opPassphrase
+   User operator added to NetHSM nethsmdemo.nitrokey.com
 
 Create Keys
 ~~~~~~~~~~~
